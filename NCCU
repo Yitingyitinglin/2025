@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>寵物友善餐廳體驗遊</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Baloo 2', sans-serif;
+            background-color: #fdf5e6;
+            text-align: center;
+            margin: 50px;
+        }
+        h1 {
+            font-family: 'Pacifico', cursive;
+            color: #774c3d;
+        }
+        p {
+            font-size: 18px;
+            color: #5e3d29;
+        }
+        .role-selection, .owner-restaurant-selection, .owner-scenario, .owner-reaction-options, .story-section {
+            margin-top: 20px;
+        }
+        button {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            background-color: #f4c2c2;
+            color: white;
+            font-family: 'Baloo 2', sans-serif;
+        }
+        button:hover {
+            background-color: #e59797;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>寵物友善餐廳體驗遊</h1>
+    <p id="role-title">你是一位飼主，帶著狗狗準備外出用餐...</p>
+
+    <!-- 飼主流程 -->
+    <div class="owner-restaurant-selection">
+        <p>你想去哪間餐廳呢？</p>
+        <button id="owner-restaurant-0" onclick="selectOwnerRestaurant(0)">🐶 狗狗圖案餐廳</button>
+        <button id="owner-restaurant-1" onclick="selectOwnerRestaurant(1)">🏠 寵物友善貼紙餐廳</button>
+        <button id="owner-restaurant-2" onclick="selectOwnerRestaurant(2)">📏 空間狹小餐廳</button>
+        <button id="owner-restaurant-3" onclick="selectOwnerRestaurant(3)">🚫 禁止寵物餐廳</button>
+    </div>
+
+    <div class="owner-scenario hidden">
+        <p id="owner-scenario-text"></p>
+    </div>
+
+    <div class="owner-reaction-options hidden">
+        <button id="owner-specific-action"></button>
+        <button onclick="leaveOwnerRestaurant()">🚪 摸摸鼻子離開，選擇其他餐廳</button>
+    </div>
+
+    <div class="story-section hidden">
+        <p id="story-text"></p>
+        <h2>他的經歷</h2>
+        <button onclick="restartGame()">🔄 重新開始</button>
+    </div>
+
+    <script>
+        let ownerUsed = [];
+
+        const ownerData = [
+            {
+                desc: "你需要扛著寵物或推車上樓。",
+                action: "試著搬運寵物/推車上樓，但感覺吃力。",
+                story: "你費力地扛著推車上樓，一邊喘氣一邊想，這樣的設計真的適合寵物友善嗎？"
+            },
+            {
+                desc: "但店員要求你把狗狗的頭用頭罩蓋住。",
+                action: "只好安撫狗狗情緒並蓋上頭套。",
+                story: "你安撫著不安的狗狗，內心有些不捨，但也明白店家的考量。"
+            },
+            {
+                desc: "空間有限，寵物間好像很容易起衝突。",
+                action: "只好將寵物放在腿上。",
+                story: "你小心翼翼地抱著寵物，希望牠別亂叫，這頓飯吃得格外小心。"
+            },
+            {
+                desc: "被提醒無法將寵物帶入內。",
+                action: "只好將狗狗安置在外，隔著門或玻璃用餐。",
+                story: "你望著玻璃外的狗狗，感覺這頓飯少了些溫度。"
+            }
+        ];
+
+        function updateOwnerRestaurantButtons() {
+            const allButtons = document.querySelectorAll('.owner-restaurant-selection button');
+            allButtons.forEach((button, index) => {
+                if (ownerUsed.includes(index)) {
+                    button.disabled = true;
+                    button.style.backgroundColor = "#ccc"; // 禁用顏色
+                } else {
+                    button.disabled = false;
+                    button.style.backgroundColor = "#f4c2c2"; // 恢復正常顏色
+                }
+            });
+        }
+
+        function selectOwnerRestaurant(index) {
+            ownerUsed.push(index);
+            updateOwnerRestaurantButtons(); // 更新按鈕禁用狀態
+            const data = ownerData[index];
+
+            document.querySelector(".owner-restaurant-selection").classList.add("hidden");
+            document.querySelector(".owner-scenario").classList.remove("hidden");
+            document.getElementById("owner-scenario-text").innerText = data.desc;
+
+            const actionBtn = document.getElementById("owner-specific-action");
+            actionBtn.innerText = data.action;
+            actionBtn.onclick = () => showOwnerStory(data.story);
+
+            document.querySelector(".owner-reaction-options").classList.remove("hidden");
+
+            // 如果所有餐廳都選完，隱藏「選擇其他餐廳」按鈕
+            if (ownerUsed.length === ownerData.length) {
+                document.getElementById("owner-specific-action").nextElementSibling.classList.add("hidden");
+            } else {
+                document.getElementById("owner-specific-action").nextElementSibling.classList.remove("hidden");
+            }
+        }
+
+        function showOwnerStory(story) {
+            document.querySelector(".owner-reaction-options").classList.add("hidden");
+            document.querySelector(".owner-scenario").classList.add("hidden");
+            document.querySelector(".story-section").classList.remove("hidden");
+            document.getElementById("story-text").innerText = story;
+        }
+
+        function leaveOwnerRestaurant() {
+            document.querySelector(".owner-scenario").classList.add("hidden");
+            document.querySelector(".owner-reaction-options").classList.add("hidden");
+            document.querySelector(".owner-restaurant-selection").classList.remove("hidden");
+            updateOwnerRestaurantButtons(); // 確保返回餐廳選擇頁面後，禁用已選餐廳
+        }
+
+        function restartGame() {
+            document.querySelector(".story-section").classList.add("hidden");
+            document.querySelector(".owner-restaurant-selection").classList.remove("hidden");
+            ownerUsed = [];
+            updateOwnerRestaurantButtons(); // 清除所有選擇並重新顯示餐廳選擇
+        }
+    </script>
+
+</body>
+</html>
